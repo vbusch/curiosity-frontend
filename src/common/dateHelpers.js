@@ -1,4 +1,3 @@
-import moment from 'moment/moment';
 import { helpers } from './helpers';
 import { RHSM_API_QUERY_GRANULARITY_TYPES as GRANULARITY_TYPES } from '../services/rhsm/rhsmConstants';
 import { translate } from '../components/i18n/i18n';
@@ -14,11 +13,11 @@ import { translate } from '../components/i18n/i18n';
  * @returns {string|Date}
  */
 const getCurrentDate = () =>
-  (helpers.TEST_MODE && moment.utc('20190720').toDate()) ||
+  (helpers.TEST_MODE && new Date(Date.UTC(2019, 7, 20))) ||
   (helpers.DEV_MODE &&
     process.env.REACT_APP_DEBUG_DEFAULT_DATETIME &&
-    moment.utc(process.env.REACT_APP_DEBUG_DEFAULT_DATETIME).toDate()) ||
-  moment.utc().toDate();
+    new Date(process.env.REACT_APP_DEBUG_DEFAULT_DATETIME)) ||
+  new Date(new Date().setUTCHours(10, 0, 0, 0));
 
 /**
  * Set a date range based on a granularity type.
@@ -26,26 +25,50 @@ const getCurrentDate = () =>
  * @param {object} params
  * @param {Date} params.date Start date, typically the current date.
  * @param {number} params.subtract Number of granularity type to subtract from the current date.
- * @param {string} params.measurement Granularity type.
- * @param {string} params.endOfMeasurement Granularity type.
+ * @param {string} para{string} params.endOfMeasurement Granularity type.
  * @returns {{endDate: Date, startDate: Date}}
  */
-const setRangedDateTime = ({ date, subtract, measurement, endOfMeasurement = 'days' }) => ({
-  startDate: moment.utc(date).startOf(measurement).subtract(subtract, measurement).toDate(),
-  endDate: moment.utc(date).startOf(measurement).endOf(endOfMeasurement).toDate()
+
+const setRangedDayDateTime = ({ date, subtract }) => ({
+  startDate: new Date(new Date(date.setUTCHours(0, 0, 0, 0)).setUTCDate(date.getUTCDate() - subtract)),
+  endDate: new Date(date.setUTCHours(23, 59, 59, 999))
 });
 
-const currentDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 1, measurement: 'days' });
-const defaultDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 30, measurement: 'days' });
-const weeklyDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 12, measurement: 'weeks' });
-const monthlyDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 12, measurement: 'months' });
-const quarterlyDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 36, measurement: 'months' });
-const rangedYearDateTime = setRangedDateTime({
-  date: getCurrentDate(),
-  subtract: 11,
-  measurement: 'months',
-  endOfMeasurement: 'months'
+const setRangedWeekDateTime = ({ date, subtract }) => ({
+  startDate: new Date(new Date(date.setUTCHours(0, 0, 0, 0)).setUTCDate(date.getUTCDate() - 6 - subtract * 7)),
+  endDate: new Date(new Date(date.setUTCHours(23, 59, 59, 999)).setUTCDate(date.getUTCDate() - 6))
 });
+
+const setRangedMonthDateTime = ({ date, subtract }) => ({
+  startDate: new Date(new Date(date.getUTCFullYear(), date.getUTCMonth() - subtract, 1).setUTCHours(0, 0, 0, 0)),
+  endDate: new Date(new Date(date.getUTCFullYear(), date.getUTCMonth(), 1).setUTCHours(23, 59, 59, 999))
+});
+
+const setRangedYearDateTime = ({ date, subtract }) => ({
+  startDate: new Date(new Date(date.getUTCFullYear() - subtract, date.getUTCMonth() + 1, 1).setUTCHours(0, 0, 0, 0)),
+  endDate: new Date(new Date(date.getUTCFullYear(), date.getUTCMonth() + 1, 0).setUTCHours(23, 59, 59, 999))
+});
+
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+];
+const currentDateTime = setRangedDayDateTime({ date: getCurrentDate(), subtract: 1 });
+const defaultDateTime = setRangedDayDateTime({ date: getCurrentDate(), subtract: 30 });
+const weeklyDateTime = setRangedWeekDateTime({ date: getCurrentDate(), subtract: 12 });
+const monthlyDateTime = setRangedMonthDateTime({ date: getCurrentDate(), subtract: 12 });
+const quarterlyDateTime = setRangedMonthDateTime({ date: getCurrentDate(), subtract: 36 });
+const rangedYearDateTime = setRangedYearDateTime({ date: getCurrentDate(), subtract: 1 });
 
 /**
  * Return a range of time based on known granularity types.
@@ -76,31 +99,31 @@ const getRangedDateTime = granularity => {
  * @returns {{keyDateTimeRanges: {}, listDateTimeRanges: Array}|*|undefined}
  */
 const getRangedMonthDateTime = month => {
-  const currentYear = Number.parseInt(moment.utc(getCurrentDate()).year(), 10);
+  const currentYear = getCurrentDate().getUTCFullYear();
   const { startDate, endDate } = { ...rangedYearDateTime };
   const keyDateTimeRanges = {};
   let listDateTimeRanges = [];
 
-  const startDateUpdated = moment.utc(startDate);
-  const endDateUpdated = moment.utc(endDate);
+  const startDateUpdated = new Date(startDate);
+  const endDateUpdated = new Date(endDate);
 
-  while (endDateUpdated > startDateUpdated || startDateUpdated.format('M') === endDateUpdated.format('M')) {
+  while (endDateUpdated > startDateUpdated || startDateUpdated.getMonth() === endDateUpdated.getMonth()) {
     const dateTime = {
       value: {
-        startDate: startDateUpdated.toDate()
+        startDate: startDateUpdated
       }
     };
 
-    const titleYear = startDateUpdated.format('MMMM YYYY');
-    const title = startDateUpdated.format('MMMM');
-    const titleIndex = startDateUpdated.format('M');
-    const isNextYear = currentYear !== Number.parseInt(startDateUpdated.year(), 10);
+    const titleYear = `${startDateUpdated.getUTCMonth}${startDateUpdated.getUTCFullYear()}`;
+    const title = monthNames[startDateUpdated.getUTCMonth()];
+    const titleIndex = startDateUpdated.getUTCMonth();
+    const isNextYear = currentYear !== startDateUpdated.getUTCFullYear();
 
     dateTime.title = (isNextYear && titleYear) || title;
     dateTime._title = title.toLowerCase();
-    dateTime.value.endDate = moment.utc(startDateUpdated).endOf('month').toDate();
+    dateTime.value.endDate = new Date(startDateUpdated.getUTCFullYear(), startDateUpdated.getUTCMonth() + 1, 0);
 
-    startDateUpdated.add(1, 'month');
+    startDateUpdated.setUTCMonth(startDateUpdated.getUTCMonth() + 1);
 
     dateTime.title = translate('curiosity-toolbar.label', { context: ['granularityRangedMonthly', dateTime.title] });
     keyDateTimeRanges[title.toLowerCase()] = { ...dateTime };
@@ -131,11 +154,13 @@ const getRangedMonthDateTime = month => {
  * @type {{short: string, yearShort: string, yearLong: string, long: string}}
  */
 const timestampDayFormats = {
-  long: 'MMMM D',
   yearLong: 'MMMM D YYYY',
   short: 'MMM D',
   yearShort: 'MMM D YYYY'
 };
+const timestampDayNumericFormats = ({ date }) => ({
+  yearMonthDate: date.toISOString().split('T')[0]
+});
 
 /**
  * Consistent timestamp month formats.
@@ -175,18 +200,34 @@ const timestampTimeFormats = {
  *
  * @type {{yearTimeShort: string, timeLong: string, yearTimeLong: string, timeShort: string}}
  */
-const timestampUTCTimeFormats = {
-  timeLong: 'DD MMMM HH:mm:ss UTC',
-  yearTimeLong: 'DD MMMM YYYY HH:mm:ss UTC',
-  timeShort: 'DD MMM HH:mm UTC',
-  yearTimeShort: 'DD MMM YYYY HH:mm UTC'
-};
+
+const timestampUTCTimeFormats = ({ date }) => ({
+  /* 'DD MMMM HH:mm:ss UTC' */
+  timeLong: date.toUTCString().replace(/\D{5}/, '').replace(/\d{4}/, '').replace(/ {2}/, ' '),
+  /* 'DD MMMM YYYY HH:mm:ss UTC' */
+  yearTimeLong: date.toUTCString().replace(/\D{5}/, '').replace(/ {2}/, ' '),
+  /* 'DD MMM HH:mm UTC', */
+  timeShort: date
+    .toUTCString()
+    .replace(/\D{5}/, '')
+    .replace(/\d{4}/, '')
+    .replace(/ {2}/, ' ')
+    .replace(/(:\d{2})(:\d{2})/, '$1'),
+  /* 'DD MMM YYYY HH:mm UTC' */
+  yearTimeShort: date
+    .toUTCString()
+    .replace(/\D{5}/, '')
+    .replace(/ {2}/, ' ')
+    .replace(/(:\d{2})(:\d{2})/, '$1')
+});
 
 const dateHelpers = {
   getCurrentDate,
   getRangedMonthDateTime,
   getRangedDateTime,
-  setRangedDateTime,
+  setRangedDayDateTime,
+  setRangedWeekDateTime,
+  setRangedMonthDateTime,
   currentDateTime,
   defaultDateTime,
   monthlyDateTime,
@@ -205,7 +246,9 @@ export {
   getCurrentDate,
   getRangedMonthDateTime,
   getRangedDateTime,
-  setRangedDateTime,
+  setRangedDayDateTime,
+  setRangedMonthDateTime,
+  setRangedYearDateTime,
   currentDateTime,
   dateHelpers,
   defaultDateTime,
@@ -217,5 +260,6 @@ export {
   timestampMonthFormats,
   timestampQuarterFormats,
   timestampTimeFormats,
-  timestampUTCTimeFormats
+  timestampUTCTimeFormats,
+  timestampDayNumericFormats
 };

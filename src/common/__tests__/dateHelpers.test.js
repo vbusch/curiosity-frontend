@@ -1,7 +1,7 @@
 import {
   dateHelpers,
   getCurrentDate,
-  setRangedDateTime,
+  setRangedDayDateTime,
   getRangedDateTime,
   getRangedMonthDateTime
 } from '../dateHelpers';
@@ -31,7 +31,7 @@ describe('DateHelpers', () => {
 
   it('should return a predictable range of time', () => {
     const currentDate = getCurrentDate();
-    const rangeDateTime = setRangedDateTime({ date: getCurrentDate(), subtract: 5, measurement: 'days' });
+    const rangeDateTime = setRangedDayDateTime({ date: getCurrentDate(), subtract: 5 });
 
     expect({
       currentDate,

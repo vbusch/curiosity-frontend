@@ -7,7 +7,6 @@ import {
 } from '@patternfly/react-tokens';
 import { Button } from '@patternfly/react-core';
 import { DateFormat } from '@redhat-cloud-services/frontend-components/DateFormat';
-import moment from 'moment/moment';
 import {
   RHSM_API_PATH_METRIC_TYPES,
   RHSM_API_PATH_PRODUCT_TYPES,
@@ -183,9 +182,7 @@ const config = {
           ),
         footer: ({ dataSets = [] } = {}) =>
           translate('curiosity-graph.cardFooterMetric', {
-            date: moment
-              .utc(dataSets?.[0]?.display?.dailyDate)
-              .format(dateHelpers.timestampUTCTimeFormats.yearTimeShort),
+            date: dateHelpers.timestampUTCTimeFormats(new Date(dataSets?.[0]?.display?.dailyDate)).yearTimeShort,
             testId: 'graphRemainingCapacityCard-footer'
           })
       }
@@ -327,7 +324,7 @@ const config = {
     {
       metric: SUBSCRIPTIONS_INVENTORY_TYPES.NEXT_EVENT_DATE,
       cell: ({ [SUBSCRIPTIONS_INVENTORY_TYPES.NEXT_EVENT_DATE]: nextEventDate } = {}) =>
-        (nextEventDate && moment.utc(nextEventDate).format('YYYY-MM-DD')) || '',
+        (nextEventDate && dateHelpers.timestampDayNumericFormats(nextEventDate).yearMonthDate) || '',
       isSort: true,
       isWrap: true,
       width: 15

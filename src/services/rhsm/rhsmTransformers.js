@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {
   RHSM_API_QUERY_SET_TYPES,
   RHSM_API_PATH_METRIC_TYPES,
@@ -197,8 +196,10 @@ const rhsmTallyCapacity = (response, { _isCapacity, params } = {}) => {
   const updatedResponse = {};
   const { [rhsmConstants.RHSM_API_RESPONSE_DATA]: data = [], [rhsmConstants.RHSM_API_RESPONSE_META]: meta = {} } =
     response || {};
-  const currentDate = moment.utc(dateHelpers.getCurrentDate());
-  const currentDateStr = moment.utc(dateHelpers.getCurrentDate()).format('MM-D-YYYY');
+  const currentDate = dateHelpers.getCurrentDate();
+  const currentDateStr = `${dateHelpers.getCurrentDate().getUTCMonth()}-${dateHelpers
+    .getCurrentDate()
+    .getUTCDate()}-${dateHelpers.getCurrentDate().getUTCFullYear()}`;
   let futureDateCount = 0;
 
   updatedResponse.data = data.map(
@@ -211,7 +212,7 @@ const rhsmTallyCapacity = (response, { _isCapacity, params } = {}) => {
       },
       index
     ) => {
-      const updatedDate = moment.utc(date);
+      const updatedDate = new Date(date);
       const isCurrentDate = updatedDate.format('MM-D-YYYY') === currentDateStr;
       const isFutureDate = updatedDate.diff(currentDate) > 0;
 

@@ -5,7 +5,6 @@ import {
 } from '@patternfly/react-tokens';
 import { Button, Label as PfLabel } from '@patternfly/react-core';
 import { DateFormat } from '@redhat-cloud-services/frontend-components/DateFormat';
-import moment from 'moment';
 import {
   RHSM_API_PATH_METRIC_TYPES,
   RHSM_API_PATH_PRODUCT_TYPES,
@@ -124,9 +123,7 @@ const config = {
           ),
         footer: ({ dataSets = [] } = {}) =>
           translate('curiosity-graph.cardFooterMetric', {
-            date: moment
-              .utc(dataSets?.[0]?.display?.dailyDate)
-              .format(dateHelpers.timestampUTCTimeFormats.yearTimeShort),
+            date: dateHelpers.timestampUTCTimeFormats(new Date(dataSets?.[0]?.display?.dailyDate)).yearTimeShort,
             testId: 'graphDailyTotalCard-footer'
           })
       },
@@ -156,9 +153,7 @@ const config = {
           ),
         footer: ({ dataSets = [] } = {}) =>
           translate('curiosity-graph.cardFooterMetric', {
-            date: moment
-              .utc(dataSets?.[0]?.display?.monthlyDate)
-              .format(dateHelpers.timestampUTCTimeFormats.yearTimeShort),
+            date: dateHelpers.timestampUTCTimeFormats(new Date(dataSets?.[0]?.display?.monthlyDate)).yearTimeShort,
             testId: 'graphMonthlyTotalCard-footer'
           })
       }

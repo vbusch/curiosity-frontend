@@ -1,4 +1,3 @@
-import moment from 'moment/moment';
 import { helpers } from './helpers';
 import { dateHelpers } from './dateHelpers';
 
@@ -57,7 +56,7 @@ const debugLog = async () => {
     const { sessionStorage } = window;
     const fileName = `${helpers.UI_LOGGER_FILE}`.replace(
       '{0}',
-      moment(dateHelpers.getCurrentDate()).format('YYYYMMDD_HHmmss')
+      moment(dateHelpers.getCurrentDate()).toISOString()format('YYYYMMDD_HHmmss')
     );
     const data = JSON.stringify(JSON.parse(sessionStorage.getItem(`${helpers.UI_LOGGER_ID}`)), null, 2);
 
