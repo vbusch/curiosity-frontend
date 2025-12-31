@@ -39,7 +39,7 @@ curl -s $CICD_URL/bootstrap.sh > .cicd_bootstrap.sh && source .cicd_bootstrap.sh
 export APP_NAME="rhsm"
 export REF_ENV="insights-stage"
 export DEPLOY_FRONTENDS="true"
-export EXTRA_DEPLOY_ARGS="--timeout 1800 "
+export EXTRA_DEPLOY_ARGS="--timeout 1800 --set-parameter rbac-frontend/IMAGE=quay.io/cloudservices/rbac-frontend "
 export DEPLOY_TIMEOUT="1800"
 # Keep that in sync with rhsm-subscriptions pr_check.sh
 export OPTIONAL_DEPS_METHOD=none
