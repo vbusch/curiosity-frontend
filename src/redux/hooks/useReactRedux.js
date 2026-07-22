@@ -26,7 +26,6 @@ const createSimpleSelector = (selectors, callback) => {
   // eslint-disable-next-line prefer-spread
   const result = helpers.memo((...resultArgs) => callback.apply(null, resultArgs));
 
-  // eslint-disable-next-line func-names
   const selector = function (...args) {
     const results = [];
     updatedSelectors.forEach(sel => {

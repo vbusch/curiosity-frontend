@@ -167,7 +167,6 @@ describe('Helpers', () => {
     const mockArray = ['hello', 'world'];
     const mockString = 'dolor sit';
     const mockNumber = 1;
-    // eslint-disable-next-line func-names
     const mockFunction = function () {
       return 'hello world';
     };

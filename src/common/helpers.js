@@ -103,7 +103,6 @@ const generateHash = anyValue => {
  * @returns {Function}
  */
 const memo = (func, { cacheLimit = 1 } = {}) => {
-  // eslint-disable-next-line func-names
   const ized = function () {
     const cache = [];
 

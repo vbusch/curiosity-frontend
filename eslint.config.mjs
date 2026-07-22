@@ -1,56 +1,31 @@
-import { join } from 'node:path';
-import { includeIgnoreFile } from '@eslint/compat';
 import babelParser from '@babel/eslint-parser';
-import globals from 'globals';
-import stylisticJsPlugin from '@stylistic/eslint-plugin';
-import commentLengthPlugin from 'eslint-plugin-comment-length';
-import jestPlugin from 'eslint-plugin-jest';
-import jsdocPlugin from 'eslint-plugin-jsdoc';
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import toolkit from '@cdcabrera/eslint-config-toolkit';
 import nodePlugin from 'eslint-plugin-n';
-import importPlugin from 'eslint-plugin-import';
-import eslintPluginJs from '@eslint/js';
 import jsonPlugin from 'eslint-plugin-json';
-import reactPlugin from 'eslint-plugin-react';
-import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import prettierPlugin from 'eslint-plugin-prettier/recommended';
 import airbnbConfig from './config/eslint.config.airbnb.mjs';
 
 export default [
-  includeIgnoreFile(join(process.cwd(), '.gitignore')),
-  // ignore additional patterns
   {
     ignores: ['build-tools']
   },
-  stylisticJsPlugin.configs.all,
-  jestPlugin.configs['flat/recommended'],
-  jsdocPlugin.configs['flat/recommended'],
-  jsxA11yPlugin.flatConfigs.recommended,
+  ...toolkit.react,
+  ...toolkit.jest,
   nodePlugin.configs['flat/recommended'],
-  importPlugin.flatConfigs.recommended,
-  eslintPluginJs.configs.recommended,
-  reactPlugin.configs.flat.recommended,
-  reactHooksPlugin.configs['recommended-latest'],
   ...airbnbConfig,
   prettierPlugin,
   jsonPlugin.configs.recommended,
   {
-    plugins: {
-      'comment-length': commentLengthPlugin
-    },
     languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
       parserOptions: {
-        ecmaVersion: 2022,
         ecmaFeatures: {
           jsx: true
-        },
-        sourceType: 'module'
+        }
       },
-      ...reactPlugin.configs.flat.recommended.languageOptions,
       parser: babelParser,
       globals: {
-        ...globals.browser,
-        ...globals.node,
         mockObjectProperty: 'readonly',
         mockWindowLocation: 'readonly',
         renderHook: 'readonly',
@@ -82,7 +57,6 @@ export default [
           logicalWrap: true
         }
       ],
-      // Override Airbnb's error level to warning - allows more flexibility with function returns
       'consistent-return': 1,
       'import/extensions': [
         'error',
@@ -98,9 +72,7 @@ export default [
           devDependencies: true
         }
       ],
-      // Disable Airbnb's error for importing default and named exports - simplifies imports
       'import/no-named-as-default': 0,
-      // Disable Airbnb's error for using named exports from modules with a default export
       'import/no-named-as-default-member': 0,
       'jest/no-done-callback': 0,
       'jest/no-standalone-expect': [2, { additionalTestBlockFunctions: ['skipIt'] }],
@@ -168,7 +140,6 @@ export default [
       ],
       'n/no-unsupported-features/node-builtins': 0,
       'no-case-declarations': 0,
-      // Disable Airbnb's warning for console statements - useful for development and debugging
       'no-console': 0,
       'no-continue': 0,
       'no-debugger': 1,
@@ -177,7 +148,6 @@ export default [
       'no-promise-executor-return': 1,
       'no-restricted-exports': [1, { restrictedNamedExports: [] }],
       'no-restricted-properties': [0, { object: 'Math', property: 'pow' }],
-      // Disable Airbnb's error for underscore-prefixed variables - allows for private variables and common patterns
       'no-underscore-dangle': 0,
       'no-unsafe-optional-chaining': 1,
       'prefer-exponentiation-operator': 0,
@@ -198,7 +168,6 @@ export default [
         { namedComponents: 'arrow-function', unnamedComponents: 'arrow-function' }
       ],
       'react/jsx-curly-newline': 0,
-      // Disable Airbnb's error that restricts JSX to .jsx files - allows JSX in .js files
       'react/jsx-filename-extension': 0,
       'react/jsx-fragments': [1, 'element'],
       'react/jsx-props-no-spreading': 0,
